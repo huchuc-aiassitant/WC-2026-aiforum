@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Forum - WC 2026</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0e27;color:#e0e0e0;min-height:100vh}
+.header{background:#16213e;padding:15px 20px;border-bottom:3px solid #e94560;text-align:center}
+.header h1{color:#fff;font-size:1.3rem}
+.header p{color:#a0a0c0;font-size:0.8rem;margin-top:4px}
+.container{max-width:800px;margin:0 auto;padding:15px}
+.match-selector{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-bottom:15px}
+.match-selector h2{font-size:1rem;color:#fff;margin-bottom:12px}
+.match-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.3s}
+.match-btn:hover,.match-btn.active{background:rgba(233,69,96,0.15);border-color:#e94560}
+.match-btn .teams{font-weight:600;color:#fff;font-size:0.9rem}
+.match-btn .meta{font-size:0.75rem;color:#8888aa;margin-top:3px}
+.match-btn .group{font-size:0.7rem;color:#e94560;margin-top:2px}
+.thread{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:20px;margin-bottom:15px;display:none}
+.thread.active{display:block}
+.thread h2{font-size:1.1rem;color:#fff;margin-bottom:8px}
+.thread .meta{color:#8888aa;font-size:0.8rem;margin-bottom:15px}
+.ai-preds{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:15px}
+.ai-box{background:rgba(0,0,0,0.2);border-left:3px solid #e94560;padding:10px;border-radius:0 8px 8px 0}
+.ai-box .name{font-size:0.75rem;color:#e94560;font-weight:600;text-transform:uppercase}
+.ai-box .score{font-size:1rem;color:#fff;font-weight:700;margin:4px 0}
+.ai-box .reason{font-size:0.75rem;color:#8888aa}
+.posts{margin-bottom:15px}
+.post{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:15px;margin-bottom:10px}
+.post-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.post-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:0.85rem}
+.post-avatar.claude{background:#d4a574}.post-avatar.chatgpt{background:#10a37f}.post-avatar.deepseek{background:#4f46e5}.post-avatar.gemini{background:#4285f4}.post-avatar.kimi{background:#e94560}.post-avatar.user{background:#f59e0b}
+.post-info{flex:1}
+.post-author{font-weight:600;color:#fff;font-size:0.9rem}
+.post-author .badge{font-size:0.65rem;padding:2px 6px;border-radius:6px;margin-left:6px}
+.badge-admin{background:#e94560}.badge-mod{background:#d4a574;color:#1a1a2e}.badge-bot{background:#4f46e5}
+.post-time{font-size:0.75rem;color:#8888aa}
+.post-content{font-size:0.9rem;color:#c0c0d0;line-height:1.6}
+.post-content p{margin-bottom:8px}
+.user-pred{background:rgba(0,0,0,0.2);border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 8px 8px 0;margin:8px 0}
+.user-pred .label{font-size:0.75rem;color:#f59e0b;font-weight:600}
+.user-pred .score{font-size:1rem;color:#fff;font-weight:700}
+.reply-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px}
+.reply-box h3{font-size:1rem;color:#fff;margin-bottom:12px}
+.reply-box textarea{width:100%;background:rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px;color:#e0e0e0;font-size:0.9rem;min-height:60px;resize:vertical;font-family:inherit}
+.reply-box textarea:focus{outline:none;border-color:#e94560}
+.reply-actions{display:flex;gap:8px;margin-top:10px;align-items:center}
+.reply-actions button{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:#a0a0c0;padding:6px 12px;border-radius:8px;font-size:0.8rem;cursor:pointer}
+.reply-actions button.active{background:rgba(233,69,96,0.25);border-color:#e94560;color:#fff}
+.reply-actions .send-btn{background:linear-gradient(135deg,#e94560,#ff6b6b);color:#fff;border:none;padding:8px 20px;border-radius:10px;font-weight:600;margin-left:auto}
+.empty{text-align:center;padding:30px;color:#6666aa}
+.empty-icon{font-size:2.5rem;margin-bottom:8px}
+.consensus{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:15px;margin-top:15px}
+.consensus h3{font-size:0.95rem;color:#fff;margin-bottom:10px}
+.consensus-item{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05)}
+.consensus-item:last-child{border-bottom:none}
+.consensus-name{font-size:0.85rem;color:#c0c0d0}
+.consensus-score{font-size:0.8rem;font-weight:600;padding:2px 8px;border-radius:6px;background:rgba(16,163,127,0.2);color:#10a37f}
+.consensus-score.disagree{background:rgba(233,69,96,0.2);color:#e94560}
+.delete-btn{color:#e94560;font-size:0.75rem;cursor:pointer;margin-left:auto}
+.like-btn{color:#8888aa;font-size:0.8rem;cursor:pointer}
+.like-btn.liked{color:#e94560}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🏆 AI Forum - World Cup 2026</h1>
+<p>Dự đoán & Thảo luận - Chạy trên iPhone</p>
+</div>
+<div class="container">
+<div class="match-selector">
+<h2>📅 Chọn trận đấu</h2>
+<div id="matchList"></div>
+</div>
+<div id="threadArea"></div>
+</div>
+<script>
+const matches=[
+{id:"m1",group:"A",teams:"🇲🇦 Morocco vs USA 🇺🇸",date:"11/06",time:"20:00",venue:"SoFi Stadium",preds:{claude:"2-1",chatgpt:"1-1",deepseek:"2-0",gemini:"1-0",kimi:"2-1"},reasons:{claude:"Morocco hàng thủ chắc, USA thiếu kinh nghiệm",chatgpt:"USA đá sân nhà, Morocco khó thắng",deepseek:"Morocco phong độ cao",gemini:"Morocco kỷ luật hơn",kimi:"Morocco chất lượng vượt trội"}},
+{id:"m2",group:"A",teams:"🇧🇷 Brazil vs Italy 🇮🇹",date:"12/06",time:"20:00",venue:"Rose Bowl",preds:{claude:"2-1",chatgpt:"1-1",deepseek:"2-0",gemini:"2-1",kimi:"1-0"},reasons:{claude:"Brazil tấn công mạnh",chatgpt:"Italy kinh nghiệm",deepseek:"Brazil phong độ cao",gemini:"Trận cân bằng",kimi:"Brazil lợi thế sân bãi"}},
+{id:"m3",group:"B",teams:"🇦🇷 Argentina vs Canada 🇨🇦",date:"12/06",time:"17:00",venue:"Mercedes-Benz Stadium",preds:{claude:"3-0",chatgpt:"2-0",deepseek:"3-1",gemini:"2-0",kimi:"3-0"},reasons:{claude:"Argentina quá mạnh",chatgpt:"Messi vượt trội",deepseek:"Argentina hàng công đỉnh",gemini:"Argentina kiểm soát",kimi:"Chênh lệch đẳng cấp"}},
+{id:"m4",group:"B",teams:"🇲🇽 Mexico vs England 🏴󠁧󠁢󠁥󠁮󠁧󠁿",date:"13/06",time:"19:00",venue:"AT&T Stadium",preds:{claude:"1-2",chatgpt:"0-2",deepseek:"1-3",gemini:"0-1",kimi:"1-2"},reasons:{claude:"England đồng đều hơn",chatgpt:"England chất lượng",deepseek:"England hàng công mạnh",gemini:"England kiểm soát",kimi:"England đội hình trẻ"}},
+{id:"m5",group:"C",teams:"🇩🇪 Germany vs Australia 🇦🇺",date:"13/06",time:"16:00",venue:"Lumen Field",preds:{claude:"2-0",chatgpt:"3-0",deepseek:"2-1",gemini:"2-0",kimi:"3-1"},reasons:{claude:"Germany tái thiết thành công",chatgpt:"Germany hồi sinh",deepseek:"Germany tấn công đa dạng",gemini:"Germany kiểm soát",kimi:"Germany lứa trẻ tài năng"}},
+{id:"m6",group:"C",teams:"🇫🇷 France vs Colombia 🇨🇴",date:"14/06",time:"14:00",venue:"NRG Stadium",preds:{claude:"2-1",chatgpt:"1-0",deepseek:"2-0",gemini:"2-1",kimi:"1-0"},reasons:{claude:"France đẳng cấp cao",chatgpt:"France chất lượng",deepseek:"France hàng công đỉnh",gemini:"France kinh nghiệm",kimi:"France có Mbappé"}},
+{id:"m7",group:"D",teams:"🇯🇵 Japan vs Netherlands 🇳🇱",date:"14/06",time:"17:00",venue:"Levi's Stadium",preds:{claude:"1-2",chatgpt:"0-1",deepseek:"1-1",gemini:"0-2",kimi:"1-2"},reasons:{claude:"Netherlands cao to",chatgpt:"Netherlands chất lượng",deepseek:"Nhật kỷ luật nhưng",gemini:"Netherlands tấn công biên",kimi:"Netherlands đẳng cấp"}},
+{id:"m8",group:"D",teams:"🇵🇹 Portugal vs Senegal 🇸🇳",date:"15/06",time:"16:00",venue:"MetLife Stadium",preds:{claude:"2-0",chatgpt:"1-0",deepseek:"2-1",gemini:"1-0",kimi:"2-0"},reasons:{claude:"Portugal đồng đều",chatgpt:"Portugal chất lượng",deepseek:"Portugal hàng công mạnh",gemini:"Portugal kiểm soát",kimi:"Ronaldo và đồng đội"}},
+{id:"m9",group:"E",teams:"🇪🇸 Spain vs Cape Verde 🇨🇻",date:"15/06",time:"13:00",venue:"Mercedes-Benz Stadium",preds:{claude:"3-0",chatgpt:"2-0",deepseek:"4-0",gemini:"3-0",kimi:"3-0"},reasons:{claude:"Cape Verde lần đầu dự WC",chatgpt:"Tây Ban Nha kiểm soát",deepseek:"Chênh lệch đẳng cấp",gemini:"Yamal và Pedri",kimi:"Tây Ban Nha lứa trẻ"}},
+{id:"m10",group:"E",teams:"🇧🇪 Belgium vs Egypt 🇪🇬",date:"15/06",time:"18:00",venue:"Lumen Field",preds:{claude:"2-1",chatgpt:"2-0",deepseek:"3-1",gemini:"2-1",kimi:"2-0"},reasons:{claude:"Ai Cập có Salah",chatgpt:"Bỉ chất lượng",deepseek:"De Bruyne và Lukaku",gemini:"Bỉ thế hệ vàng",kimi:"Bỉ dù chuyển giao"}},
+{id:"m11",group:"F",teams:"🇸🇦 Saudi Arabia vs Uruguay 🇺🇾",date:"15/06",time:"18:00",venue:"Hard Rock Stadium",preds:{claude:"0-2",chatgpt:"1-3",deepseek:"1-2",gemini:"0-2",kimi:"0-2"},reasons:{claude:"Uruguay kinh nghiệm",chatgpt:"Uruguay hàng công",deepseek:"Núñez và Valverde",gemini:"Uruguay ổn định",kimi:"Uruguay cầu thủ châu Âu"}},
+{id:"m12",group:"F",teams:"🇮🇷 Iran vs New Zealand 🇳🇿",date:"16/06",time:"00:00",venue:"SoFi Stadium",preds:{claude:"1-0",chatgpt:"1-1",deepseek:"2-0",gemini:"1-0",kimi:"1-0"},reasons:{claude:"Iran phòng ngự chặt",chatgpt:"Cả hai thận trọng",deepseek:"Iran phong độ tốt",gemini:"Iran kỷ luật",kimi:"Iran an toàn"}},
+{id:"m13",group:"G",teams:"🇰🇷 South Korea vs Tunisia 🇹🇳",date:"16/06",time:"15:00",venue:"AT&T Stadium",preds:{claude:"2-0",chatgpt:"1-0",deepseek:"2-1",gemini:"1-0",kimi:"2-0"},reasons:{claude:"Son Heung-min",chatgpt:"Hàn Quốc tấn công",deepseek:"Son và đồng đội",gemini:"Hàn Quốc kiểm soát",kimi:"Hàn Quốc châu Âu"}},
+{id:"m14",group:"G",teams:"🇨🇭 Switzerland vs Ecuador 🇪🇨",date:"16/06",time:"18:00",venue:"Levi's Stadium",preds:{claude:"1-0",chatgpt:"2-0",deepseek:"1-1",gemini:"1-0",kimi:"2-1"},reasons:{claude:"Thụy Sĩ kỷ luật",chatgpt:"Thụy Sĩ chất lượng",deepseek:"Trận cân bằng",gemini:"Thụy Sĩ phòng ngự",kimi:"Thụy Sĩ kinh nghiệm"}},
+{id:"m15",group:"H",teams:"🇨🇷 Costa Rica vs Paraguay 🇵🇾",date:"17/06",time:"14:00",venue:"NRG Stadium",preds:{claude:"1-1",chatgpt:"0-1",deepseek:"1-2",gemini:"0-0",kimi:"1-1"},reasons:{claude:"Cả hai thận trọng",chatgpt:"Paraguay nhỉnh hơn",deepseek:"Paraguay lợi thế",gemini:"Ít bàn thắng",kimi:"Cân bằng"}},
+{id:"m16",group:"H",teams:"🇩🇰 Denmark vs Poland 🇵🇱",date:"17/06",time:"17:00",venue:"Mercedes-Benz Stadium",preds:{claude:"1-0",chatgpt:"1-1",deepseek:"2-1",gemini:"1-0",kimi:"2-0"},reasons:{claude:"Đan Mạch đồng đội",chatgpt:"Cân bằng",deepseek:"Đan Mạch phong độ",gemini:"Đan Mạch kỷ luật",kimi:"Đan Mạch Eriksen"}}];
+
+const aiNames=["claude","chatgpt","deepseek","gemini","kimi"];
+const aiDisplay={claude:"Claude",chatgpt:"ChatGPT",deepseek:"DeepSeek",gemini:"Gemini",kimi:"Kimi"};
+const aiBadges={claude:"mod",chatgpt:"bot",deepseek:"bot",gemini:"bot",kimi:"admin"};
+const aiAvatars={claude:"C",chatgpt:"G",deepseek:"D",gemini:"G",kimi:"K"};
+
+let currentMatch=null;
+let userPosts=JSON.parse(localStorage.getItem("wc2026_posts")||"[]");
+let userName=localStorage.getItem("wc2026_name")||"User";
+function init(){
+if(userName==="User"){
+var name=prompt("Nhập tên hiển thị của bạn:");
+if(name&&name.trim()){userName=name.trim();localStorage.setItem("wc2026_name",userName)}
+}
+renderMatches();
+}
+
+function renderMatches(){
+var list=document.getElementById("matchList");
+list.innerHTML=matches.map(function(m){
+return '<div class="match-btn" data-id="'+m.id+'" onclick="selectMatch(\''+m.id+'\')">'+
+'<div class="teams">'+m.teams+'</div>'+
+'<div class="meta">'+m.date+' • '+m.time+' • '+m.venue+'</div>'+
+'<div class="group">Bảng '+m.group+'</div></div>';
+}).join("");
+}
+
+function selectMatch(id){
+currentMatch=matches.find(function(m){return m.id===id});
+if(!currentMatch)return;
+document.querySelectorAll(".match-btn").forEach(function(b){b.classList.remove("active")});
+document.querySelector('.match-btn[data-id="'+id+'"]').classList.add("active");
+renderThread();
+}
+
+function renderThread(){
+var area=document.getElementById("threadArea");
+var m=currentMatch;
+var html='<div class="thread active">'+
+'<h2>'+m.teams+' <span style="color:#e94560;font-size:0.85rem;">Bảng '+m.group+'</span></h2>'+
+'<div class="meta">📅 '+m.date+' • '+m.time+' • 🏟️ '+m.venue+'</div>'+
+'<div class="ai-preds">';
+
+aiNames.forEach(function(ai){
+html+='<div class="ai-box">'+
+'<div class="name">'+aiDisplay[ai]+'</div>'+
+'<div class="score">'+m.preds[ai]+'</div>'+
+'<div class="reason">'+m.reasons[ai]+'</div></div>';
+});
+
+html+='</div><div class="consensus"><h3>📊 Đồng thuận AI</h3>';
+aiNames.forEach(function(ai){
+var score=m.preds[ai];
+var cls=score.includes("?")?"disagree":"";
+html+='<div class="consensus-item"><span class="consensus-name">'+aiDisplay[ai]+'</span><span class="consensus-score '+cls+'">'+score+'</span></div>';
+});
+html+='</div><div class="posts" id="posts_'+m.id+'">'+renderPosts(m.id)+'</div>'+
+'<div class="reply-box">'+
+'<h3>✍️ Tham gia thảo luận</h3>'+
+'<textarea id="comment_'+m.id+'" placeholder="Chia sẻ ý kiến của bạn..."></textarea>'+
+'<div class="reply-actions">'+
+'<button onclick="togglePred(this)">📊 Thêm dự đoán</button>'+
+'<button onclick="askAI()">🤖 Hỏi AI</button>'+
+'<button class="send-btn" onclick="submitComment()">Gửi</button>'+
+'</div></div></div>';
+
+area.innerHTML=html;
+}
+
+function renderPosts(matchId){
+var posts=userPosts.filter(function(p){return p.matchId===matchId});
+if(posts.length===0)return '<div class="empty"><div class="empty-icon">💬</div><p>Chưa có bình luận. Hãy là người đầu tiên!</p></div>';
+
+return posts.map(function(p){
+return '<div class="post">'+
+'<div class="post-header">'+
+'<div class="post-avatar user">'+p.userName.charAt(0).toUpperCase()+'</div>'+
+'<div class="post-info">'+
+'<div class="post-author">'+p.userName+'</div>'+
+'<div class="post-time">'+p.time+'</div></div>'+
+'<div class="delete-btn" onclick="deletePost(\''+p.id+'\')">🗑️</div></div>'+
+'<div class="post-content">'+escapeHtml(p.content)+''+
+(p.pred?'<div class="user-pred"><div class="label">Dự đoán</div><div class="score">'+p.pred+'</div></div>':'')+
+'</div>'+
+'<div class="like-btn '+((p.liked)?'liked':'')+'" onclick="toggleLike(\''+p.id+'\')">'+(p.liked?'❤️':'🤍')+' '+p.likes+'</div>'+
+'</div>';
+}).join("");
+}
+
+function togglePred(btn){btn.classList.toggle("active")}
+
+function askAI(){
+alert("📊 Dự đoán AI:\n\n"+aiNames.map(function(ai){return aiDisplay[ai]+": "+currentMatch.preds[ai]+"\n→ "+currentMatch.reasons[ai]}).join("\n\n"));
+}
+
+function submitComment(){
+var textarea=document.getElementById("comment_"+currentMatch.id);
+var content=textarea.value.trim();
+if(!content)return;
+
+var hasPred=document.querySelector('.reply-actions button:first-child').classList.contains("active");
+var pred="";
+if(hasPred){pred=prompt("Nhập tỷ số dự đoán (vd: 2-1):");if(!pred)pred=""}
+
+var post={id:"p"+Date.now(),matchId:currentMatch.id,userName:userName,content:content,pred:pred,time:new Date().toLocaleString("vi-VN"),likes:0,liked:false};
+userPosts.push(post);
+localStorage.setItem("wc2026_posts",JSON.stringify(userPosts));
+
+renderThread();
+}
+
+function toggleLike(id){
+var p=userPosts.find(function(x){return x.id===id});
+if(!p)return;
+p.liked=!p.liked;
+p.likes+=p.liked?1:-1;
+localStorage.setItem("wc2026_posts",JSON.stringify(userPosts));
+renderThread();
+}
+
+function deletePost(id){
+if(!confirm("Xóa bài viết?"))return;
+userPosts=userPosts.filter(function(x){return x.id!==id});
+localStorage.setItem("wc2026_posts",JSON.stringify(userPosts));
+renderThread();
+}
+
+function escapeHtml(text){
+var div=document.createElement("div");
+div.textContent=text;
+return div.innerHTML;
+}
+
+init();
+</script>
+</body>
+</html>
